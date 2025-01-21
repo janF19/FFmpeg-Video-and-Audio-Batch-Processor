@@ -1,0 +1,5 @@
+tkinter>=8.6
+pathlib>=1.0.1
+python-dotenv>=1.0.0  # For future environment variable support
+psutil>=5.9.0  # For CPU/memory monitoring
+pillow>=10.0.0  # For enhanced GUI elements and future image preview support
