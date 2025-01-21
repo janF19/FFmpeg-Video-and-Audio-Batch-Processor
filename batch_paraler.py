@@ -15,7 +15,7 @@ class FFmpegBatchGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("FFmpeg Batch Folder Processor")
-        self.root.geometry("800x600")
+        self.root.geometry("900x700")
         
         # Variables to store paths
         self.input_folder = tk.StringVar()
@@ -28,6 +28,10 @@ class FFmpegBatchGUI:
         self.completed_files = 0
         self.total_files = 0
        
+        # Add new variables
+        self.output_format = tk.StringVar(value="mp4")
+        self.custom_command = tk.StringVar()
+        self.preset_quality = tk.StringVar(value="medium")
         
         self.create_widgets()
         
@@ -45,28 +49,46 @@ class FFmpegBatchGUI:
         ttk.Entry(main_frame, textvariable=self.output_folder, width=60).grid(row=1, column=1, padx=5)
         ttk.Button(main_frame, text="Browse", command=self.browse_output).grid(row=1, column=2)
         
+        # Add format selection
+        format_frame = ttk.LabelFrame(main_frame, text="Output Settings", padding="5")
+        format_frame.grid(row=2, column=0, columnspan=3, sticky="ew", pady=5)
+        
+        ttk.Label(format_frame, text="Output Format:").grid(row=0, column=0, padx=5)
+        format_combo = ttk.Combobox(format_frame, textvariable=self.output_format, 
+                                  values=["mp4", "mkv", "mov", "avi"])
+        format_combo.grid(row=0, column=1, padx=5)
+        
+        ttk.Label(format_frame, text="Quality Preset:").grid(row=0, column=2, padx=5)
+        preset_combo = ttk.Combobox(format_frame, textvariable=self.preset_quality,
+                                  values=["ultrafast", "fast", "medium", "slow"])
+        preset_combo.grid(row=0, column=3, padx=5)
+        
+        # Custom FFmpeg command entry
+        ttk.Label(format_frame, text="Custom FFmpeg Parameters:").grid(row=1, column=0, padx=5, pady=5)
+        ttk.Entry(format_frame, textvariable=self.custom_command, width=50).grid(row=1, column=1, columnspan=3, padx=5)
+        
         # List of files to be processed
-        ttk.Label(main_frame, text="Files to be processed:").grid(row=2, column=0, columnspan=3, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Files to be processed:").grid(row=3, column=0, columnspan=3, sticky=tk.W, pady=5)
         
         # Create text widget for file list
         self.file_list = tk.Text(main_frame, height=20, width=80)
-        self.file_list.grid(row=3, column=0, columnspan=3, pady=5)
+        self.file_list.grid(row=4, column=0, columnspan=3, pady=5)
         
         # Scrollbar for file list
         scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=self.file_list.yview)
-        scrollbar.grid(row=3, column=3, sticky="ns")
+        scrollbar.grid(row=4, column=3, sticky="ns")
         self.file_list.configure(yscrollcommand=scrollbar.set)
         
         # Progress bar
         self.progress = ttk.Progressbar(main_frame, length=600, mode='determinate')
-        self.progress.grid(row=4, column=0, columnspan=3, pady=20)
+        self.progress.grid(row=5, column=0, columnspan=3, pady=20)
         
         # Status label
         self.status_label = ttk.Label(main_frame, text="Ready")
-        self.status_label.grid(row=5, column=0, columnspan=3)
+        self.status_label.grid(row=6, column=0, columnspan=3)
         
         # Process button
-        ttk.Button(main_frame, text="Process Files", command=self.process_files).grid(row=6, column=0, columnspan=3, pady=20)
+        ttk.Button(main_frame, text="Process Files", command=self.process_files).grid(row=7, column=0, columnspan=3, pady=20)
     
     
     def browse_input(self):
@@ -230,6 +252,37 @@ class FFmpegBatchGUI:
         threading.Thread(target=process_thread, daemon=True).start()
         self.update_progress()
 
+    def create_menu(self):
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Clear All", command=self.clear_all)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.root.quit)
+        
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+        tools_menu.add_command(label="Save Log", command=self.save_log)
+        tools_menu.add_command(label="Check FFmpeg Version", command=self.check_ffmpeg_version)
+    
+    def clear_all(self):
+        self.input_folder.set("")
+        self.output_folder.set("")
+        self.matched_files.clear()
+        self.file_list.delete(1.0, tk.END)
+        self.progress['value'] = 0
+        self.status_label.config(text="Ready")
+    
+    def save_log(self):
+        log_file = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if log_file:
+            with open(log_file, 'w') as f:
+                f.write(self.file_list.get(1.0, tk.END))
 
 def check_ffmpeg():
     try:
