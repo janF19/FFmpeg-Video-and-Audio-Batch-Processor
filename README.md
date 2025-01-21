@@ -36,21 +36,11 @@ cd ffmpeg-batch-gui
 pip install -r requirements.txt
 ```
 
-## Requirements.txt
-
-Create a `requirements.txt` file with the following content:
-```
-tkinter
-pathlib
-```
-
-Note: tkinter usually comes pre-installed with Python.
-
 ## Usage
 
 1. Run the application:
 ```bash
-python ffmpeg_batch_gui.py
+python program.py
 ```
 
 2. Using the interface:
